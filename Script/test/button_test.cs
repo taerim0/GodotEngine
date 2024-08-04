@@ -21,11 +21,6 @@ public partial class ButtonTest : Node
 
 		button = GetNode<Button>("../Button");
 
-		GD.Print(SideView.IsProcessing());
-		GD.Print(TopView.IsProcessing());
-		GD.Print(SideViewCamera.Enabled);
-		GD.Print(TopViewCamera.Enabled);
-
 		SideView.SetProcess(false);
 		SideViewCamera.Enabled = false;
 
@@ -36,9 +31,7 @@ public partial class ButtonTest : Node
 	{
 		SideView.SetProcess(!SideView.IsProcessing());
 		SideViewCamera.Enabled = SideView.IsProcessing();
-		GD.Print(SideViewCamera.Enabled);
 		TopView.SetProcess(!TopView.IsProcessing());
 		TopViewCamera.Enabled = TopView.IsProcessing();
-		GD.Print(TopViewCamera.Enabled);
 	}
 }
