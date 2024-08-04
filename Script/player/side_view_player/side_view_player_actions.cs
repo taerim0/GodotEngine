@@ -23,7 +23,7 @@ public partial class side_view_player_actions : CharacterBody2D
 			velocity.X = Mathf.Lerp(velocity.X, dir * speed, acceleration);
 		else velocity.X = Mathf.Lerp(velocity.X, 0.0f, friction);
 
-		velocity.Y += gravity * (float)delta;
+		velocity.Y = utils.Clamp(velocity.Y + gravity * (float)delta, -500, 300);
 
 		if (Input.IsActionJustPressed("SideViewPlayerMovement_Jump") && IsOnFloor())
 			velocity.Y = jumpSpeed;
