@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class SideViewPlayerActions : CharacterBody2D
+public partial class side_view_player_actions : CharacterBody2D
 {
 	private int gravity = 1000;
 	private int jumpSpeed = -500;

@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class TopViewPlayerActions : CharacterBody2D
+public partial class top_view_player_actions : CharacterBody2D
 {
 	private int speed = 400;
 

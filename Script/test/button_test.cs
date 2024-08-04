@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class ButtonTest : Node
+public partial class button_test : Node
 {
 	CharacterBody2D TopView;
 	CharacterBody2D SideView;
