@@ -3,11 +3,11 @@ using System;
 
 public partial class side_view_player_actions : CharacterBody2D
 {
-	private int gravity = 1000;
-	private int jumpSpeed = -500;
-	private int speed = 200;
+	private int gravity = 2000;
+	private int jumpSpeed = -2500;
+	private int speed = 400;
 	private float acceleration = 0.25f;
-	private float friction = 0.1f;
+	private float friction = 0.12f;
 
 	public override void _Process(double delta)
 	{
@@ -25,13 +25,8 @@ public partial class side_view_player_actions : CharacterBody2D
 
 		velocity.Y = utils.Clamp(velocity.Y + gravity * (float)delta, -500, 500);
 
-		if (IsOnFloor())
-		{
-			if (Input.IsActionJustPressed("SideViewPlayerMovement_Jump"))
-				velocity.Y = jumpSpeed;
-			else
-				velocity.Y = -100;
-        }
+		if (Input.IsActionJustPressed("SideViewPlayerMovement_Jump") && IsOnFloor())
+			velocity.Y = jumpSpeed;
 
 		// Apply Movements to Character
 		MoveAndSlide();
