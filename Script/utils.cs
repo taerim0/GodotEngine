@@ -28,7 +28,7 @@ public partial class utils : Node
 		return;
 	}
 
-	public static void UpdateInterationAreaDir(Area2D area, Vector2 curDir)
+	public static void UpdateArea2DDir(Area2D area, Vector2 curDir)
 	{
 		if (curDir.Normalized() == Vector2.Zero)
 			return;
