@@ -13,9 +13,9 @@ public partial class button_test : Node
 
 	public override void _Ready()
 	{
-		TopView = GetNode<CharacterBody2D>("../character_body_2d");
+		TopView = GetNode<CharacterBody2D>("../top_view_player");
 		GD.Print(TopView);
-		TopViewCamera = GetNode<Camera2D>("../character_body_2d/camera_2d");
+		TopViewCamera = GetNode<Camera2D>("../top_view_player/camera_2d");
 		SideView = GetNode<CharacterBody2D>("../character_body_2d2");
 		SideViewCamera = GetNode<Camera2D>("../character_body_2d2/camera_2d");
 
