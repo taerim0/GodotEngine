@@ -1,33 +1,46 @@
 using Godot;
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 public partial class game_manager : Node
 {
 	// Data Resources
 	public player_data_resource playerDataResource { get; set; }
+	public player_data_resource tmpPlayerDataResource { get; set; }
 
 	// File Path
 	private const string PlayerFilePath = "user://save/data";
+	private const string TmpPlayerFilePath = "user://save/data.tmp.tres";
 
 	public override void _Ready()
 	{
 		if (!Directory.Exists(System.IO.Path.Combine(OS.GetUserDataDir(), "save")))
-            Directory.CreateDirectory(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
+			Directory.CreateDirectory(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
 
-		GD.Print(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
-
-        NewPlayer(64);
+		GD.Print("new player data");
+		NewPlayer(64);
+		GD.Print(playerDataResource.TopViewNormalSpeed);
+		GD.Print(playerDataResource.TopViewRunSpeed);
 		SavePlayer(64);
+		GD.Print(playerDataResource.TopViewNormalSpeed);
+		GD.Print(playerDataResource.TopViewRunSpeed);
 		LoadPlayer(64);
+		GD.Print(playerDataResource.TopViewNormalSpeed);
+		GD.Print(playerDataResource.TopViewRunSpeed);
+		tmpPlayerDataResource = playerDataResource;
+		SaveTmpPlayer();
+		LoadTmpPlayer();
 	}
 
 	public void NewPlayer(int ID)
 	{
-		playerDataResource = new player_data_resource
+		playerDataResource = new player_data_resource()
 		{
 			playerName = "",
-			TopViewSpeed = 400,
+			TopViewNormalSpeed = 400,
+			TopViewRunSpeed = 600,
 			SideViewSpeed = 250,
 			SideViewJumpSpeed = -600
 		};
@@ -35,8 +48,11 @@ public partial class game_manager : Node
 
 	public void SavePlayer(int ID)
 	{
-		if (ID > 9) ResourceSaver.Save(playerDataResource, PlayerFilePath +ID.ToString() + ".tres");
-		else ResourceSaver.Save(playerDataResource, PlayerFilePath + "0" + ID.ToString() + ".tres");
+		string targetFile;
+		if (ID > 9) targetFile = PlayerFilePath + ID.ToString() + ".tres";
+		else targetFile = PlayerFilePath + "0" + ID.ToString() + ".tres";
+
+		ResourceSaver.Save(playerDataResource, targetFile);
 		GD.Print("PlayerData Saved. data" + ID.ToString() + ".tres");
 	}
 
@@ -55,5 +71,15 @@ public partial class game_manager : Node
 
 		GD.Print("SaveFile doesn't exist");
 		return false;
+	}
+
+	public void SaveTmpPlayer()
+	{
+		ResourceSaver.Save(tmpPlayerDataResource, TmpPlayerFilePath);
+	}
+
+	public void LoadTmpPlayer()
+	{
+		tmpPlayerDataResource = (player_data_resource)ResourceLoader.Load(TmpPlayerFilePath);
 	}
 }
