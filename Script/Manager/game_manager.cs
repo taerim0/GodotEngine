@@ -19,16 +19,9 @@ public partial class game_manager : Node
 		if (!Directory.Exists(System.IO.Path.Combine(OS.GetUserDataDir(), "save")))
 			Directory.CreateDirectory(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
 
-		GD.Print("new player data");
 		NewPlayer(64);
-		GD.Print(playerDataResource.TopViewNormalSpeed);
-		GD.Print(playerDataResource.TopViewRunSpeed);
 		SavePlayer(64);
-		GD.Print(playerDataResource.TopViewNormalSpeed);
-		GD.Print(playerDataResource.TopViewRunSpeed);
 		LoadPlayer(64);
-		GD.Print(playerDataResource.TopViewNormalSpeed);
-		GD.Print(playerDataResource.TopViewRunSpeed);
 		tmpPlayerDataResource = playerDataResource;
 		SaveTmpPlayer();
 		LoadTmpPlayer();
@@ -48,9 +41,7 @@ public partial class game_manager : Node
 
 	public void SavePlayer(int ID)
 	{
-		string targetFile;
-		if (ID > 9) targetFile = PlayerFilePath + ID.ToString() + ".tres";
-		else targetFile = PlayerFilePath + "0" + ID.ToString() + ".tres";
+		string targetFile = PlayerFilePath + (ID > 9 ? "" : "0") + ".tres";
 
 		ResourceSaver.Save(playerDataResource, targetFile);
 		GD.Print("PlayerData Saved. data" + ID.ToString() + ".tres");
@@ -58,9 +49,7 @@ public partial class game_manager : Node
 
 	public bool LoadPlayer(int ID)
 	{
-		string targetFile;
-		if (ID > 9) targetFile = PlayerFilePath + ID.ToString() + ".tres";
-		else targetFile = PlayerFilePath + "0" + ID.ToString() + ".tres";
+		string targetFile = PlayerFilePath + (ID > 9 ? "" : "0") + ".tres";
 
 		if (Godot.FileAccess.FileExists(targetFile))
 		{
