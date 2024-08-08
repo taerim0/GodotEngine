@@ -1,14 +1,11 @@
 using Godot;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
 
 public partial class game_manager : Node
 {
 	// Data Resources
 	public player_data_resource playerDataResource { get; set; }
-	public player_data_resource tmpPlayerDataResource { get; set; }
 
 	// File Path
 	private const string PlayerFilePath = "user://save/data";
@@ -19,11 +16,6 @@ public partial class game_manager : Node
 		if (!Directory.Exists(System.IO.Path.Combine(OS.GetUserDataDir(), "save")))
 			Directory.CreateDirectory(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
 
-		NewPlayer(64);
-		SavePlayer(64);
-		LoadPlayer(64);
-		tmpPlayerDataResource = playerDataResource;
-		SaveTmpPlayer();
 		LoadTmpPlayer();
 	}
 
@@ -41,7 +33,7 @@ public partial class game_manager : Node
 
 	public void SavePlayer(int ID)
 	{
-		string targetFile = PlayerFilePath + (ID > 9 ? "" : "0") + ".tres";
+		string targetFile = PlayerFilePath + ID.ToString("D2") + ".tres";
 
 		ResourceSaver.Save(playerDataResource, targetFile);
 		GD.Print("PlayerData Saved. data" + ID.ToString() + ".tres");
@@ -49,7 +41,7 @@ public partial class game_manager : Node
 
 	public bool LoadPlayer(int ID)
 	{
-		string targetFile = PlayerFilePath + (ID > 9 ? "" : "0") + ".tres";
+		string targetFile = PlayerFilePath + ID.ToString("D2") + ".tres";
 
 		if (Godot.FileAccess.FileExists(targetFile))
 		{
@@ -64,11 +56,11 @@ public partial class game_manager : Node
 
 	public void SaveTmpPlayer()
 	{
-		ResourceSaver.Save(tmpPlayerDataResource, TmpPlayerFilePath);
+		ResourceSaver.Save(playerDataResource, TmpPlayerFilePath);
 	}
 
 	public void LoadTmpPlayer()
 	{
-		tmpPlayerDataResource = (player_data_resource)ResourceLoader.Load(TmpPlayerFilePath);
+		playerDataResource = (player_data_resource)ResourceLoader.Load(TmpPlayerFilePath);
 	}
 }

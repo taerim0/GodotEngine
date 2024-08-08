@@ -9,21 +9,23 @@ public partial class top_view_player_actions : CharacterBody2D
 	// Inputs
 	private class PlayerInputs
 	{
-		public float velocityX, velocityY;
+		public float HorizontalAxis, VerticalAxis;
 		public bool isPressInteractionKey;
 
 		public PlayerInputs()
 		{
-			this.velocityX = 0;
-			this.velocityY = 0;
+			this.HorizontalAxis = 0;
+			this.VerticalAxis = 0;
 			this.isPressInteractionKey = false;
 		}
 
-		public void Update(float velocityX, float velocityY, bool isPressInteractionKey)
+		public void Update(float HorizontalAxis, float VerticalAxis, bool isPressInteractionKey)
 		{
-			this.velocityX = velocityX;
-			this.velocityY = velocityY;
+			this.HorizontalAxis = HorizontalAxis;
+			this.VerticalAxis = VerticalAxis;
 			this.isPressInteractionKey = isPressInteractionKey;
+
+			return;
 		}
 	}PlayerInputs playerInputs;
 
@@ -55,9 +57,9 @@ public partial class top_view_player_actions : CharacterBody2D
 
 	public override void _Ready()
 	{
-		gameManager = GetNode<game_manager>("../game_manager");
-		objectManager = GetNode<object_manager>("../object_manager");
-		eventManager = GetNode<event_manager>("../event_manager");
+		gameManager = GetNode<game_manager>("/root/game_manager");
+		objectManager = GetNode<object_manager>("/root/object_manager");
+		eventManager = GetNode<event_manager>("/root/event_manager");
 
 		interactionArea = GetNode<Area2D>("interaction_area");
 		interactionArea.AreaEntered += InteractiveObjectEntered;
@@ -68,6 +70,8 @@ public partial class top_view_player_actions : CharacterBody2D
 		
 		playerInputs = new PlayerInputs();
 		detectedObject = new Queue<int>();
+
+		return;
 	}
 
 	public override void _Process(double delta)
@@ -84,8 +88,8 @@ public partial class top_view_player_actions : CharacterBody2D
 
 	private void UpdatePlayerData()
 	{
-		NormalSpeed = (int)gameManager.tmpPlayerDataResource.TopViewNormalSpeed;
-		RunSpeed = (int)gameManager.tmpPlayerDataResource.TopViewRunSpeed;
+		NormalSpeed = (int)gameManager.playerDataResource.TopViewNormalSpeed;
+		RunSpeed = (int)gameManager.playerDataResource.TopViewRunSpeed;
 
 		return;
 	}
@@ -97,8 +101,8 @@ public partial class top_view_player_actions : CharacterBody2D
 			speed = RunSpeed; else speed = NormalSpeed;
 
 		// Apply Velocity
-		MoveAndCollide(new Vector2(playerInputs.velocityX, 0) * speed * (float)delta);
-		MoveAndCollide(new Vector2(0, playerInputs.velocityY) * speed * (float)delta);
+		MoveAndCollide(new Vector2(playerInputs.HorizontalAxis, 0) * speed * (float)delta);
+		MoveAndCollide(new Vector2(0, playerInputs.VerticalAxis) * speed * (float)delta);
 
 		return;
 	}
@@ -106,7 +110,7 @@ public partial class top_view_player_actions : CharacterBody2D
 	private void InteractionActions(double delta)
 	{
 		// InteractionArea Update
-		utils.UpdateArea2DDir(interactionArea, new Vector2(playerInputs.velocityX, playerInputs.velocityY));
+		utils.UpdateArea2DDir(interactionArea, new Vector2(playerInputs.HorizontalAxis, playerInputs.VerticalAxis));
 
 		if (playerInputs.isPressInteractionKey && detectedObject.Count > 0)
 			objectInteraction();
@@ -170,7 +174,7 @@ public partial class top_view_player_actions : CharacterBody2D
 
 		if (encounterObject is event_area eventArea)
 		{
-			eventManager.EventCalled(eventArea.eventID);
+			eventManager.EventCaller(eventArea.eventID, 0);
 		}
 
 		return;
