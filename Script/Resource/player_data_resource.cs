@@ -26,7 +26,8 @@ public partial class player_data_resource : Resource
 	public float SideViewJumpSpeed { get; set; }
 
 	// Equipments
-
+	[Export]
+	public int equippedWeapon { get; set; }
 
 	// Inventory
 	[Export]
