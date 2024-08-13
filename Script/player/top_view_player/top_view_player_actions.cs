@@ -5,12 +5,17 @@ using System.Collections.Generic;
 public partial class top_view_player_actions : CharacterBody2D
 {
 	private int speed;
+	private bool isUiVisible = false;
+	private bool isMenuVisible = false;
+	private bool isEscapeVisible = false;
 
 	// Inputs
 	private class PlayerInputs
 	{
 		public float HorizontalAxis, VerticalAxis;
 		public bool isPressInteractionKey;
+		public bool isPressMenuKey;
+		public bool isPressEscapeKey;
 
 		public PlayerInputs()
 		{
@@ -19,19 +24,22 @@ public partial class top_view_player_actions : CharacterBody2D
 			this.isPressInteractionKey = false;
 		}
 
-		public void Update(float HorizontalAxis, float VerticalAxis, bool isPressInteractionKey)
-		{
+		public void Update(
+			float HorizontalAxis,
+			float VerticalAxis,
+			bool isPressInteractionKey,
+			bool isPressMenuKey,
+			bool isPressEscapeKey
+			) {
 			this.HorizontalAxis = HorizontalAxis;
 			this.VerticalAxis = VerticalAxis;
 			this.isPressInteractionKey = isPressInteractionKey;
+			this.isPressMenuKey = isPressMenuKey;
+			this.isPressEscapeKey = isPressEscapeKey;
 
 			return;
 		}
 	}PlayerInputs playerInputs;
-
-	// PlayerData
-	private int NormalSpeed;
-	private int RunSpeed;
 
 	// Manager
 	private game_manager gameManager;
@@ -43,6 +51,8 @@ public partial class top_view_player_actions : CharacterBody2D
 	private Area2D encounterArea;
 	private CollisionShape2D interactionAreaCollision;
 
+	private menu_ui menuUi;
+
 	// InputMap
 	private string moveLeftKey = "TopViewPlayerMovement_Left";
 	private string moveRightKey = "TopViewPlayerMovement_Right";
@@ -52,6 +62,10 @@ public partial class top_view_player_actions : CharacterBody2D
 	// Interaction
 	private string interactionKey = "TopViewPlayerInteraction";
 	private Queue<int> detectedObject;
+
+	// Action - Ui Call
+	private string MenuKey = "TopViewPlayerAction_Menu";
+	private string EscapeKey = "TopViewPlayerAction_Escape";
 
 	// Encounter
 
@@ -67,9 +81,15 @@ public partial class top_view_player_actions : CharacterBody2D
 
 		encounterArea = GetNode<Area2D>("encounter_area");
 		encounterArea.AreaEntered += EncounterObjectEntered;
+
+		Position = gameManager.playerDataResource.mapPos;
 		
 		playerInputs = new PlayerInputs();
 		detectedObject = new Queue<int>();
+
+		menuUi = GetNode<menu_ui>("menu_ui");
+		menuUi.Visible = false;
+		menuUi.SetProcessInput(false);
 
 		return;
 	}
@@ -79,26 +99,55 @@ public partial class top_view_player_actions : CharacterBody2D
 		playerInputs.Update(
 			Input.GetAxis(moveLeftKey, moveRightKey),
 			Input.GetAxis(moveUpKey, moveDownKey),
-			Input.IsActionJustPressed(interactionKey)
+			Input.IsActionJustPressed(interactionKey),
+			Input.IsActionJustPressed(MenuKey),
+			Input.IsActionJustPressed(EscapeKey)
 		);
-		UpdatePlayerData();
-		PlayerMovements(delta);
-		InteractionActions(delta);
+
+		isUiVisible = isUiVisibleUpdate();
+
+		if (playerInputs.isPressMenuKey)
+		{
+			if (!isUiVisible)
+			{
+				menuUi.Visible = true;
+				isMenuVisible = true;
+				menuUi.SetProcessInput(true);
+				isUiVisible = true;
+			}
+			else if (isMenuVisible)
+			{
+				menuUi.Visible = false;
+				isMenuVisible = false;
+				menuUi.SetProcessInput(false);
+				menuUi.CloseSubUi();
+			}
+		}
+
+		if (playerInputs.isPressEscapeKey)
+		{
+
+		}
+
+		if (!isUiVisible)
+		{
+			PlayerMovements(delta);
+			InteractionActions(delta);
+		}
 	}
 
-	private void UpdatePlayerData()
+	private bool isUiVisibleUpdate()
 	{
-		NormalSpeed = (int)gameManager.playerDataResource.TopViewNormalSpeed;
-		RunSpeed = (int)gameManager.playerDataResource.TopViewRunSpeed;
-
-		return;
+		if (isMenuVisible) return true;
+		if (isEscapeVisible) return true;
+		return false;
 	}
 
 	private void PlayerMovements(double delta)
 	{
 		// isRun
 		if (Input.IsKeyPressed(Key.Shift))
-			speed = RunSpeed; else speed = NormalSpeed;
+			speed = (int)gameManager.playerDataResource.TopViewRunSpeed; else speed = (int)gameManager.playerDataResource.TopViewNormalSpeed;
 
 		// Apply Velocity
 		MoveAndCollide(new Vector2(playerInputs.HorizontalAxis, 0) * speed * (float)delta);
@@ -175,6 +224,13 @@ public partial class top_view_player_actions : CharacterBody2D
 		if (encounterObject is event_area eventArea)
 		{
 			eventManager.EventCaller(eventArea.eventID, 0);
+			return;
+		}
+
+		if (encounterObject is map_changer mapChanger)
+		{
+			eventManager.MapCaller(mapChanger.nextMapID, mapChanger.nextMapPos);
+			return;
 		}
 
 		return;

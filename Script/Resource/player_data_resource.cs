@@ -10,8 +10,11 @@ public partial class player_data_resource : Resource
     [Export]
     public int playerLevel { get; set; }
 
+    // map
     [Export]
-    public int saveFileID { get; set; }
+    public int mapID { get; set; }
+    [Export]
+    public Vector2 mapPos { get; set; }
 
     // TopViewData
     [Export]

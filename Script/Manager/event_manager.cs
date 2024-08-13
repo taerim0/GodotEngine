@@ -28,14 +28,24 @@ public partial class event_manager : Node
 
 	private List<EventFunction> Events;
 
+	// Manager
+	private game_manager gameManager;
+	private object_manager objectManager;
+	private event_manager eventManager;
+
 	public override void _Ready()
 	{
+		gameManager = GetNode<game_manager>("/root/game_manager");
+		objectManager = GetNode<object_manager>("/root/object_manager");
+		eventManager = GetNode<event_manager>("/root/event_manager");
+
 		eventState = new EventState();
 
 		Events = new List<EventFunction>()
 		{
-			Event0000,
-			Event0001
+			Event0000, Event0001, Event0002, Event0003, Event0004,
+			Event0005, Event0006,
+
 		};
 	}
 
@@ -60,8 +70,13 @@ public partial class event_manager : Node
 		GetTree().CallDeferred("change_scene_to_file", "res://scene/battles/battle" + battleID.ToString("D4") + ".tscn");
 	}
 
-	private void Event0000(int stage)
+	public void MapCaller(int mapID, Vector2 mapPos)
 	{
+		GetTree().CallDeferred("change_scene_to_file", "res://scene/maps/map" + mapID.ToString("D4") + ".tscn");
+	}
+
+	private void Event0000(int stage)
+	{ // Event for Debug & Test 0
 		switch (stage)
 		{
 			case 0:
@@ -75,9 +90,46 @@ public partial class event_manager : Node
 	}
 
 	private void Event0001(int stage)
-	{
-
+	{ // Event for Debug & Test 1
+		
 	}
 
-	
+	private void Event0002(int stage)
+	{ // Event for Debug & Test 2
+		
+	}
+
+	private void Event0003(int stage)
+	{ // Event for Debug & Test 3
+		
+	}
+
+	private void Event0004(int stage)
+	{ // NewGame
+		gameManager.NewPlayer();
+		MapCaller(gameManager.playerDataResource.mapID, gameManager.playerDataResource.mapPos);
+
+		return;
+	}
+
+	private void Event0005(int stage)
+	{ // SaveGame
+		gameManager.SavePlayer(stage);
+
+		return;
+	}
+
+	private void Event0006(int stage)
+	{ // LoadGame
+		gameManager.LoadPlayer(stage);
+		MapCaller(gameManager.playerDataResource.mapID, gameManager.playerDataResource.mapPos);
+
+		return;
+	}
 }
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 using System.IO;
 
@@ -6,6 +7,7 @@ public partial class game_manager : Node
 {
 	// Data Resources
 	public player_data_resource playerDataResource { get; set; }
+	public setting_resource settingResource { get; set; }
 
 	// File Path
 	private const string PlayerFilePath = "user://save/data";
@@ -16,18 +18,25 @@ public partial class game_manager : Node
 		if (!Directory.Exists(System.IO.Path.Combine(OS.GetUserDataDir(), "save")))
 			Directory.CreateDirectory(System.IO.Path.Combine(OS.GetUserDataDir(), "save"));
 
-		LoadTmpPlayer();
+		NewPlayer();
 	}
 
-	public void NewPlayer(int ID)
+   	public void NewPlayer()
 	{
 		playerDataResource = new player_data_resource()
 		{
 			playerName = "",
+			playerLevel = 1,
+			mapID = 0,
+			mapPos = new Vector2(0, 0),
 			TopViewNormalSpeed = 400,
 			TopViewRunSpeed = 600,
 			SideViewSpeed = 250,
-			SideViewJumpSpeed = -600
+			SideViewJumpSpeed = -600,
+			equippedWeapon = 0,
+			itemInventory = new Array<item_resource>(),
+			itemAmount = new Array<Dictionary<int, int>>(),
+			itemPosition = new Array<Dictionary<int, int>>(),
 		};
 	}
 
@@ -36,7 +45,7 @@ public partial class game_manager : Node
 		string targetFile = PlayerFilePath + ID.ToString("D2") + ".tres";
 
 		ResourceSaver.Save(playerDataResource, targetFile);
-		GD.Print("PlayerData Saved. data" + ID.ToString() + ".tres");
+		GD.Print("PlayerData Saved. data" + ID.ToString("D2") + ".tres");
 	}
 
 	public bool LoadPlayer(int ID)
@@ -46,7 +55,7 @@ public partial class game_manager : Node
 		if (Godot.FileAccess.FileExists(targetFile))
 		{
 			playerDataResource = (player_data_resource)ResourceLoader.Load(targetFile);
-			GD.Print("PlayerData Loaded. data" + ID.ToString() + ".tres");
+			GD.Print("PlayerData Loaded. data" + ID.ToString("D2") + ".tres");
 			return true;
 		}
 
