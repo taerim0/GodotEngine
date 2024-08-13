@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 public partial class side_view_player_actions : CharacterBody2D
@@ -9,8 +10,8 @@ public partial class side_view_player_actions : CharacterBody2D
 	public bool canPlayerInput = true;
 
 	private int gravity = 2000;
-	private int jumpSpeed = -1500;
-	private int speed = 400;
+	private int jumpSpeed = -1300;
+	private int speed = 250;
 	private int dashSpeed = 350;
 	private float acceleration = 0.25f;
 	private float friction = 0.12f;
@@ -27,13 +28,18 @@ public partial class side_view_player_actions : CharacterBody2D
 	private float attackTime = 0f;
 	private float attackDir = 1f;
 
+	int[] dy = { 0, 0, 1, -1 };
+	int[] dx = { 1, -1, 0, 0 };
+
 	// Inputs
 	private class PlayerInputs
 	{
 		public float HorizontalAxis, VerticalAxis;
-		public bool isPressJumpKey, isPressDashKey, 
+		public bool
+			isPressJumpKey, isPressDashKey,
 			isPressAttackKey, isPressSkill1Key,
-			isPressSkill2Key, isPressUseSkillKey;
+			isPressSkill2Key, isPressUseSkillKey,
+			isPressDownKey;
 
 		public PlayerInputs()
 		{
@@ -45,6 +51,7 @@ public partial class side_view_player_actions : CharacterBody2D
 			this.isPressSkill1Key = false;
 			this.isPressSkill2Key = false;
 			this.isPressUseSkillKey = false;
+			this.isPressDownKey = false;
 		}
 
 		public void Update(
@@ -55,7 +62,8 @@ public partial class side_view_player_actions : CharacterBody2D
 			bool isPressAttackKey,
 			bool isPressSkill1Key,
 			bool isPressSkill2Key,
-			bool isPressUseSkillKey
+			bool isPressUseSkillKey,
+			bool isPressDownKey
 		) {
 			this.HorizontalAxis = HorizontalAxis;
 			this.VerticalAxis = VerticalAxis;
@@ -65,6 +73,7 @@ public partial class side_view_player_actions : CharacterBody2D
 			this.isPressSkill1Key = isPressSkill1Key;
 			this.isPressSkill2Key = isPressSkill2Key;
 			this.isPressUseSkillKey = isPressUseSkillKey;
+			this.isPressDownKey = isPressDownKey;
 
 			return;
 		}
@@ -105,6 +114,9 @@ public partial class side_view_player_actions : CharacterBody2D
 	private string actionSkill2 = "SideViewPlayerAction_Skill2";
 	private string actionUseSkill = "SideViewPlayerAction_UseSkill";
 
+	// TileMap
+	private TileMap physicTile;
+
 	public override void _Ready()
 	{
 		gameManager = GetNode<game_manager>("/root/game_manager");
@@ -113,6 +125,8 @@ public partial class side_view_player_actions : CharacterBody2D
 
 		attackCollision = GetNode<Area2D>("attack_collision");
 		attackCollisionShape = GetNode<CollisionShape2D>("attack_collision/collision_shape_2d");
+
+		physicTile = GetNode<TileMap>("../physic_tile");
 
 		playerInputs = new PlayerInputs();
 	}
@@ -131,7 +145,8 @@ public partial class side_view_player_actions : CharacterBody2D
 				Input.IsActionJustPressed(actionAttack),
 				Input.IsActionJustPressed(actionSkill1),
 				Input.IsActionJustPressed(actionSkill2),
-				Input.IsActionJustPressed(actionUseSkill)
+				Input.IsActionJustPressed(actionUseSkill),
+				Input.IsActionPressed(moveDown)
 			);
 		}
 
@@ -230,8 +245,6 @@ public partial class side_view_player_actions : CharacterBody2D
 		{
 			curDir = playerInputs.HorizontalAxis;
 
-			if (velocity.Y == 0)
-				actionState = ActionState.Run;
 			velocity.X = Mathf.Lerp(velocity.X, playerInputs.HorizontalAxis * speed, acceleration);
 		}
 		else
@@ -256,7 +269,14 @@ public partial class side_view_player_actions : CharacterBody2D
 		{
 			if (IsOnFloor())
 			{
-				velocity.Y = jumpSpeed;
+				if (playerInputs.isPressDownKey)
+				{
+					JumpThroughFloor();
+				}
+				else
+				{
+					velocity.Y = jumpSpeed;
+				}
 			}
 			else if (JumpCnt > 0)
 			{
@@ -277,6 +297,49 @@ public partial class side_view_player_actions : CharacterBody2D
 		return utils.Clamp(velocityY + gravity * (float)delta, -500, 800);
 	}
 
+	private async void JumpThroughFloor()
+	{
+		List<Vector2I> floor = new List<Vector2I>();
+
+		var tilePos = physicTile.LocalToMap(Position + new Vector2(0, 48));
+		if (physicTile.GetCellAtlasCoords(0, tilePos) == new Vector2I(2, 0))
+		{
+			DefineFloor(floor, tilePos);
+			foreach (Vector2I cell in floor)
+				physicTile.SetCell(0, cell, 1, new Vector2I(3, 0));
+			await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
+			foreach (Vector2I cell in floor)
+				physicTile.SetCell(0, cell, 1, new Vector2I(2, 0));
+		}
+	}
+
+	private void DefineFloor(List<Vector2I> floor, Vector2I start)
+	{
+		Dictionary<Vector2I, bool> cellCheck = new Dictionary<Vector2I, bool>();
+		Queue<Vector2I> q = new Queue<Vector2I>();
+		floor.Add(start); q.Enqueue(start);
+		cellCheck[start] = true;
+
+		while (q.Count > 0)
+		{
+			Vector2I nowPos = q.Dequeue();
+
+			for (int i = 0; i < 2; i++)
+			{
+				Vector2I targetPos = nowPos + new Vector2I(dx[i], dy[i]);
+
+				if (physicTile.GetCellAtlasCoords(0, targetPos) != new Vector2I(2, 0))
+					continue;
+
+				if (cellCheck.ContainsKey(targetPos))
+					continue;
+
+				cellCheck[targetPos] = true;
+				floor.Add(targetPos); q.Enqueue(targetPos);
+			}
+		}
+	}
+
 	private void useDash()
 	{
 		Vector2 velocity = Velocity;
@@ -292,7 +355,7 @@ public partial class side_view_player_actions : CharacterBody2D
 	{
 		Vector2 velocity = Velocity;
 
-		velocity.X = attackDir * 200;
+		velocity.X = attackDir * 70;
 
 		Velocity = velocity;
 

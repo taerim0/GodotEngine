@@ -67,15 +67,8 @@ public partial class menu_ui : Control
 
 	public void Close()
 	{
-		if (isSubUiVisible)
-		{
-			CloseSubUi();
-		}
-		else
-		{
-			Visible = false;
-			SetProcessInput(false);
-		}
+		Visible = false;
+		SetProcessInput(false);
 	}
 
 	public void CloseSubUi()

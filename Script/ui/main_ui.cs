@@ -19,7 +19,7 @@ public partial class main_ui : Control
 		objectManager = GetNode<object_manager>("/root/object_manager");
 		eventManager = GetNode<event_manager>("/root/event_manager");
 
-		loadGameUi = GetNode<loadgame_ui>("../loadgame_ui");
+		loadGameUi = GetNode<loadgame_ui>("loadgame_ui");
 
 		loadGameUi.Visible = false;
 		loadGameUi.SetProcessInput(false);

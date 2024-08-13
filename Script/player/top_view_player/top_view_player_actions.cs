@@ -7,6 +7,7 @@ public partial class top_view_player_actions : CharacterBody2D
 	private int speed;
 	private bool isUiVisible = false;
 	private bool isMenuVisible = false;
+	private bool isSubMenuVisible = false;
 	private bool isEscapeVisible = false;
 
 	// Inputs
@@ -117,16 +118,31 @@ public partial class top_view_player_actions : CharacterBody2D
 			}
 			else if (isMenuVisible)
 			{
-				menuUi.Visible = false;
 				isMenuVisible = false;
-				menuUi.SetProcessInput(false);
-				menuUi.CloseSubUi();
+				menuUi.Close();
 			}
 		}
 
 		if (playerInputs.isPressEscapeKey)
 		{
-
+			if (isSubMenuVisible)
+			{
+				isSubMenuVisible = false;
+				menuUi.CloseSubUi();
+			}
+			else if (isMenuVisible)
+			{
+				isMenuVisible = false;
+				menuUi.Close();
+			}
+			else if (isEscapeVisible)
+			{
+				isEscapeVisible = false;
+			}
+			else
+			{
+				isEscapeVisible = true;
+			}
 		}
 
 		if (!isUiVisible)
